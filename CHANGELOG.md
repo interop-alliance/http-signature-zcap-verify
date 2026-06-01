@@ -1,4 +1,17 @@
-# @digitalbazaar/http-signature-zcap-verify ChangeLog
+# @interop/http-signature-zcap-verify ChangeLog
+
+## 12.0.0 - TBD
+
+### Changed
+- **BREAKING**: Fork, rename package to `@interop/http-signature-zcap-verify`.
+- **BREAKING**: Rewrite in TypeScript; now ships ESM from `dist/` with type
+  declarations. Source moved from `lib/` to `src/`.
+- **BREAKING**: Switch dependencies to the `@interop` forks:
+  `@digitalbazaar/http-signature-header` to `@interop/http-signature-header`,
+  `@digitalbazaar/zcap` to `@interop/zcap`.
+- Replace `base64url-universal` and the Node/browser `base64Decode` split with
+  `@scure/base` (isomorphic). The `signature` parameter is decoded as padded
+  standard base64; the `capability-invocation` capability as unpadded base64url.
 
 ## 11.1.1 - 2024-04-02
 
