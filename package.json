@@ -1,63 +1,66 @@
 {
-  "name": "@digitalbazaar/http-signature-zcap-verify",
-  "version": "11.1.2-0",
+  "name": "@interop/http-signature-zcap-verify",
   "description": "A library for invoking Authorization Capabilities via HTTP signatures",
-  "license": "BSD-3-Clause",
+  "version": "11.1.2-0",
   "type": "module",
-  "exports": "./lib/index.js",
-  "browser": {
-    "./lib/util.js": "./lib/util-browser.js"
+  "scripts": {
+    "build": "pnpm run clear && tsc",
+    "clear": "rimraf dist/*",
+    "dev": "vite",
+    "fix": "eslint --fix src test && pnpm run format",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint src test",
+    "prepare": "pnpm run build",
+    "rebuild": "pnpm run clear && pnpm run build",
+    "test": "pnpm run lint && pnpm run test-node && pnpm run test-browser",
+    "test-browser": "playwright test",
+    "test-node": "vitest run",
+    "test-coverage": "vitest run --coverage"
   },
   "files": [
-    "lib/**/*.js"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
-  "scripts": {
-    "test": "npm run test-node",
-    "test-node": "cross-env NODE_ENV=test mocha --preserve-symlinks -t 30000 -A -R ${REPORTER:-spec} --require tests/test-mocha.js tests/*.spec.js",
-    "test-karma": "karma start karma.conf.cjs",
-    "coverage": "cross-env NODE_ENV=test c8 npm run test-node",
-    "coverage-ci": "cross-env NODE_ENV=test c8 --reporter=lcovonly --reporter=text-summary --reporter=text npm run test-node",
-    "coverage-report": "c8 report",
-    "lint": "eslint ."
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./dist/index.js",
+      "import": "./dist/index.js"
+    }
   },
+  "module": "dist/index.js",
+  "browser": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
   "dependencies": {
-    "@digitalbazaar/http-signature-header": "^5.0.0",
-    "@digitalbazaar/zcap": "^9.0.0",
-    "base64url-universal": "^2.0.0",
+    "@interop/http-signature-header": "^5.0.2",
+    "@interop/zcap": "^10.1.0",
+    "@scure/base": "^2.2.0",
     "pako": "^2.0.4"
   },
   "devDependencies": {
-    "@digitalbazaar/ed25519-signature-2020": "^5.0.0",
-    "@digitalbazaar/ed25519-verification-key-2020": "^4.0.0",
-    "@digitalbazaar/http-signature-zcap-invoke": "^6.0.0",
-    "@digitalbazaar/security-context": "^1.0.0",
-    "@digitalbazaar/security-document-loader": "^2.0.0",
-    "aes-key-wrapping-2019-context": "^1.0.3",
-    "c8": "^9.1.0",
-    "chai": "^4.3.6",
-    "cross-env": "^7.0.3",
-    "crypto-ld": "^7.0.0",
-    "eslint": "^8.17.0",
-    "eslint-config-digitalbazaar": "^5.0.1",
-    "eslint-plugin-jsdoc": "^48.2.2",
-    "eslint-plugin-unicorn": "^51.0.1",
-    "isomorphic-webcrypto": "^2.3.8",
-    "karma": "^6.3.20",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^3.1.1",
-    "karma-mocha": "^2.0.1",
-    "karma-mocha-reporter": "^2.2.5",
-    "karma-sourcemap-loader": "^0.4.0",
-    "karma-webpack": "^5.0.0",
-    "mocha": "^10.0.0",
-    "mocha-lcov-reporter": "^1.3.0",
-    "sha256-hmac-key-2019-context": "^1.0.3",
-    "webpack": "^5.73.0",
-    "zcap-context": "^1.2.1"
+    "@eslint/js": "^10.0.1",
+    "@interop/ed25519-signature": "^7.0.0",
+    "@interop/ed25519-verification-key": "^7.0.1",
+    "@interop/http-signature-zcap-invoke": "^6.2.0",
+    "@interop/security-document-loader": "^9.2.0",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.1",
+    "@vitest/coverage-v8": "^4.1.7",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "rimraf": "^6.1.3",
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.59.4",
+    "vite": "^8.0.14",
+    "vitest": "^4.1.7"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/digitalbazaar/http-signature-zcap-verify"
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "authorization",
@@ -70,23 +73,19 @@
     "zcap",
     "zcaps"
   ],
-  "author": {
-    "name": "Digital Bazaar, Inc.",
-    "email": "support@digitalbazaar.com",
-    "url": "https://digitalbazaar.com/"
-  },
-  "bugs": {
-    "url": "https://github.com/digitalbazaar/http-signature-zcap-verify/issues"
-  },
-  "homepage": "https://github.com/digitalbazaar/http-signature-zcap-verify",
+  "packageManager": "pnpm@11.3.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=24.0"
   },
-  "c8": {
-    "reporter": [
-      "lcov",
-      "text-summary",
-      "text"
-    ]
-  }
+  "author": {
+    "name": "Interop Alliance",
+    "url": "https://github.com/interop-alliance/"
+  },
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/interop-alliance/http-signature-zcap-verify.git"
+  },
+  "homepage": "https://github.com/interop-alliance/http-signature-zcap-verify",
+  "bugs": "https://github.com/interop-alliance/http-signature-zcap-verify/issues"
 }
