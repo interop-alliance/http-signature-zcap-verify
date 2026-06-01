@@ -7,9 +7,10 @@ import { Ed25519Signature2020 } from '@interop/ed25519-signature'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { signCapabilityInvocation } from '@interop/http-signature-zcap-invoke'
 import { securityDocumentLoader } from './document-loader.js'
+import type { IVerificationMethod } from '@interop/data-integrity-core'
+import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
 import {
   verifyCapabilityInvocation,
-  type DocumentLoader,
   type GetVerifier
 } from '../../src/index.js'
 
@@ -42,7 +43,7 @@ async function setup() {
     invocationTarget: invocationResourceUrl
   })
 
-  const documentLoader: DocumentLoader = async uri => {
+  const documentLoader: IDocumentLoader = async uri => {
     // the controller should return a didDocument
     // with the ProofPurpose's term on it
     // In this case that term is capabilityInvocation
@@ -86,7 +87,10 @@ async function setup() {
     // equivalent). It accepts either the ed25519-2020 suite context or the
     // Multikey context emitted by `export()`.
     const key = await Ed25519VerificationKey.fromKeyDocument({ document })
-    return { verifier: key.verifier(), verificationMethod: document }
+    return {
+      verifier: key.verifier(),
+      verificationMethod: document as unknown as IVerificationMethod
+    }
   }
   // we need a signer just for the sign step
   const invocationSigner = keyPair.signer()
@@ -118,7 +122,7 @@ async function setup() {
 describe('verifyCapabilityInvocation', () => {
   describe('Ed25519VerificationKey2020', () => {
     let suite: Ed25519Signature2020
-    let documentLoader: DocumentLoader
+    let documentLoader: IDocumentLoader
     let keyId: string
     let getVerifier: GetVerifier
     let signed: Record<string, string>
@@ -238,7 +242,7 @@ describe('verifyCapabilityInvocation', () => {
       const pastDate = new Date(2020, 11, 17)
         .toISOString()
         .replace(/\.[0-9]{3}/, '')
-      const _documentLoader: DocumentLoader = async url => {
+      const _documentLoader: IDocumentLoader = async url => {
         if (keyId === url) {
           const doc = keyPair.export({
             publicKey: true,
@@ -348,7 +352,7 @@ describe('verifyCapabilityInvocation', () => {
     it('should THROW if keyId can not be dereferenced by the documentLoader', async () => {
       let result
       let error = null
-      const _documentLoader: DocumentLoader = async uri => {
+      const _documentLoader: IDocumentLoader = async uri => {
         throw new Error(`NotFoundError: ${uri}`)
       }
       try {
@@ -375,7 +379,7 @@ describe('verifyCapabilityInvocation', () => {
     it('should THROW if verificationMethod type is not supported', async () => {
       let result
       let error = null
-      const _documentLoader: DocumentLoader = async uri => {
+      const _documentLoader: IDocumentLoader = async uri => {
         if (uri === keyId) {
           const doc = {
             id: uri,

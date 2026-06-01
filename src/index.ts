@@ -7,27 +7,14 @@ import {
   parseRequest,
   parseSignatureHeader
 } from '@interop/http-signature-header'
+import type {
+  IVerifier,
+  IVerificationMethod,
+  IZcap
+} from '@interop/data-integrity-core'
+import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
 import { base64decode, base64url } from './baseX.js'
 import pako from 'pako'
-
-/**
- * Verifies an HTTP signature using public key material.
- */
-export interface Verifier {
-  verify(payload: {
-    data: Uint8Array
-    signature: Uint8Array
-  }): Promise<boolean>
-}
-
-/**
- * A verification method document, typically dereferenced from the key id.
- */
-export interface VerificationMethod {
-  id?: string
-  controller?: string
-  [key: string]: unknown
-}
 
 /**
  * An async function that dereferences a key id and returns a verifier and the
@@ -35,17 +22,8 @@ export interface VerificationMethod {
  */
 export type GetVerifier = (options: {
   keyId: string
-  documentLoader: DocumentLoader
-}) => Promise<{ verifier: Verifier; verificationMethod: VerificationMethod }>
-
-/**
- * A JSON-LD document loader.
- */
-export type DocumentLoader = (url: string) => Promise<{
-  contextUrl?: string | null
-  documentUrl?: string
-  document: unknown
-}>
+  documentLoader: IDocumentLoader
+}) => Promise<{ verifier: IVerifier; verificationMethod: IVerificationMethod }>
 
 /**
  * @param options {object} - Options to use.
@@ -54,7 +32,7 @@ export type DocumentLoader = (url: string) => Promise<{
  * @param options.headers {object} - The headers from the request.
  * @param options.getVerifier {GetVerifier} - An async function to
  *   call to get a verifier and verification method for the key ID.
- * @param options.documentLoader {DocumentLoader} - A jsonld document loader; it
+ * @param options.documentLoader {IDocumentLoader} - A jsonld document loader; it
  *   must be able to load the root zcap and any contexts used in the zcap
  *   delegation chain.
  * @param options.expectedHost {string|string[]} - The expected host of the
@@ -93,7 +71,7 @@ export interface VerifyCapabilityInvocationOptions {
   method: string
   headers: Record<string, string>
   getVerifier: GetVerifier
-  documentLoader: DocumentLoader
+  documentLoader: IDocumentLoader
   expectedHost: string | string[]
   expectedAction: string
   expectedRootCapability: string | string[]
@@ -104,7 +82,7 @@ export interface VerifyCapabilityInvocationOptions {
   beforeValidatePurpose?: (params: {
     purpose: unknown
     proof: unknown
-    capability: unknown
+    capability: string | IZcap
     capabilityAction: unknown
   }) => Promise<void> | void
   inspectCapabilityChain?: InspectCapabilityChain
@@ -120,12 +98,12 @@ export interface VerifyCapabilityInvocationOptions {
 export interface VerifyCapabilityInvocationResult {
   verified: boolean
   error?: Error
-  capability?: unknown
+  capability?: string | IZcap
   capabilityAction?: unknown
   controller?: string
-  dereferencedChain?: unknown
+  dereferencedChain?: IZcap[]
   invoker?: string
-  verificationMethod?: VerificationMethod
+  verificationMethod?: IVerificationMethod
 }
 
 /**
@@ -264,7 +242,7 @@ export async function verifyCapabilityInvocation({
 
   let capability = parsedInvocationHeader.params.id as
     | string
-    | { parentCapability?: unknown }
+    | IZcap
     | undefined
   if (!capability) {
     capability = parsedInvocationHeader.params.capability as string | undefined
@@ -351,7 +329,7 @@ export async function verifyCapabilityInvocation({
   const { valid, error } = result
   // `dereferencedChain` is attached internally on success but is not part of
   // the public `ProofValidateResult` type.
-  const { dereferencedChain } = result as { dereferencedChain?: unknown }
+  const { dereferencedChain } = result as { dereferencedChain?: IZcap[] }
   if (!valid) {
     return { verified: false, error }
   }
