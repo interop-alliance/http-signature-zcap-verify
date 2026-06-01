@@ -1,5 +1,11 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.0.1 - TBD
+
+### Changed
+- Use exported types from `@interop/data-integrity-core` instead of re-defining
+  locally.
+
 ## 12.0.0 - 2026-06-01
 
 ### Changed

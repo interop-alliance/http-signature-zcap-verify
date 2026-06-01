@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@interop/data-integrity-core':
+        specifier: ^6.1.0
+        version: 6.1.0
       '@interop/http-signature-header':
         specifier: ^5.0.2
         version: 5.0.2

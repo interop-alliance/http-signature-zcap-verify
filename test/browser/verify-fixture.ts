@@ -6,7 +6,9 @@ import { Ed25519Signature2020 } from '@interop/ed25519-signature'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { signCapabilityInvocation } from '@interop/http-signature-zcap-invoke'
 import { securityDocumentLoader } from '../node/document-loader.js'
-import { verifyCapabilityInvocation, type DocumentLoader } from '../../src/index.js'
+import type { IKeyPairCore, IVerificationMethod } from '@interop/data-integrity-core'
+import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
+import { verifyCapabilityInvocation } from '../../src/index.js'
 
 const controller = 'did:test:controller'
 const invocationResourceUrl = 'https://test.org/zcaps/foo'
@@ -31,7 +33,7 @@ export async function runHappyPath(): Promise<boolean> {
     invocationTarget: invocationResourceUrl
   })
 
-  const documentLoader: DocumentLoader = async uri => {
+  const documentLoader: IDocumentLoader = async uri => {
     if (uri === controller) {
       return {
         contextUrl: null,
@@ -61,13 +63,16 @@ export async function runHappyPath(): Promise<boolean> {
     documentLoader
   }: {
     keyId: string
-    documentLoader: DocumentLoader
+    documentLoader: IDocumentLoader
   }) => {
-    const { document } = (await documentLoader(keyId)) as {
-      document: Record<string, unknown>
+    const { document } = await documentLoader(keyId)
+    const key = await Ed25519VerificationKey.fromKeyDocument({
+      document: document as IKeyPairCore
+    })
+    return {
+      verifier: key.verifier(),
+      verificationMethod: document as IVerificationMethod
     }
-    const key = await Ed25519VerificationKey.fromKeyDocument({ document })
-    return { verifier: key.verifier(), verificationMethod: document }
   }
 
   const invocationSigner = keyPair.signer()

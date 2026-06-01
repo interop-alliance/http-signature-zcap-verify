@@ -34,6 +34,7 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "@interop/data-integrity-core": "^6.1.0",
     "@interop/http-signature-header": "^5.0.2",
     "@interop/zcap": "^10.1.0",
     "@scure/base": "^2.2.0",
