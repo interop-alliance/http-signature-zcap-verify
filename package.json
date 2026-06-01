@@ -59,8 +59,7 @@
     "vitest": "^4.1.7"
   },
   "publishConfig": {
-    "access": "public",
-    "provenance": true
+    "access": "public"
   },
   "keywords": [
     "authorization",

@@ -1,7 +1,9 @@
 # http-signature-zcap-verify _(@interop/http-signature-zcap-verify)_
 
-A library for verifying Authorization Capability (ZCAP) invocations via HTTP
-signatures.
+[![Node.js CI](https://github.com/interop-alliance/http-signature-zcap-verify/workflows/CI/badge.svg)](https://github.com/interop-alliance/http-signature-zcap-verify/actions?query=workflow%3A%22CI%22)
+[![NPM Version](https://img.shields.io/npm/v/@interop/http-signature-zcap-verify.svg)](https://npm.im/@interop/http-signature-zcap-verify)
+
+> A library for verifying Authorization Capability (ZCAP) invocations via HTTP signatures.
 
 It is the verifier counterpart to
 [`@interop/http-signature-zcap-invoke`](https://github.com/interop-alliance/http-signature-zcap-invoke),
