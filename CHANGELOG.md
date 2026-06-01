@@ -1,6 +1,6 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## 12.0.0 - TBD
+## 12.0.0 - 2026-06-01
 
 ### Changed
 - **BREAKING**: Fork, rename package to `@interop/http-signature-zcap-verify`.

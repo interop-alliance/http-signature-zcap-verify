@@ -1,7 +1,7 @@
 {
   "name": "@interop/http-signature-zcap-verify",
   "description": "A library for invoking Authorization Capabilities via HTTP signatures",
-  "version": "11.1.2-0",
+  "version": "12.0.0",
   "type": "module",
   "scripts": {
     "build": "pnpm run clear && tsc",
