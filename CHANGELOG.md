@@ -1,6 +1,6 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## 12.0.2 - TBD
+## 12.0.2 - 2026-06-02
 
 ### Changed
 - Update to work with latest `@interop/zcap@11.0.1` (which was converted to
