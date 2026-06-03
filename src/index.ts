@@ -2,7 +2,10 @@
  * Copyright (c) 2021-2026 Digital Bazaar, Inc. and Interop Alliance. All rights reserved.
  */
 import { CapabilityInvocation, constants } from '@interop/zcap'
-import type { InspectCapabilityChain } from '@interop/zcap'
+import type {
+  InspectCapabilityChain,
+  CapabilityInvocationOptions
+} from '@interop/zcap'
 import {
   parseRequest,
   parseSignatureHeader
@@ -15,6 +18,15 @@ import type {
 import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
 import { base64decode, base64url } from './baseX.js'
 import pako from 'pako'
+
+/**
+ * A jsonld-signatures signature suite instance (or instances) used to verify
+ * the capability delegation chain, e.g. `new Ed25519Signature2020()`. Derived
+ * from `@interop/zcap`'s public option type, which carries the underlying
+ * `LinkedDataProof` type from `@interop/jsonld-signatures` (a dependency this
+ * library does not otherwise import).
+ */
+export type SignatureSuite = NonNullable<CapabilityInvocationOptions['suite']>
 
 /**
  * An async function that dereferences a key id and returns a verifier and the
@@ -41,8 +53,8 @@ export type GetVerifier = (options: {
  * @param options.expectedRootCapability {string|string[]} - The expected root
  *   capability of the zcap.
  * @param options.expectedTarget {string} - The expected target of the zcap.
- * @param options.suite {object} - The jsigs signature suite(s) for verifying
- *   the capability delegation chain.
+ * @param options.suite {SignatureSuite} - The jsigs signature suite(s) for
+ *   verifying the capability delegation chain.
  * @param [options.allowTargetAttenuation=false] {boolean} - Allow the
  *   invocationTarget of a delegation chain to be increasingly restrictive
  *   based on a hierarchical RESTful URL structure.
@@ -76,7 +88,7 @@ export interface VerifyCapabilityInvocationOptions {
   expectedAction: string
   expectedRootCapability: string | string[]
   expectedTarget: string
-  suite: object
+  suite: SignatureSuite
   allowTargetAttenuation?: boolean
   additionalHeaders?: string[]
   beforeValidatePurpose?: (params: {
@@ -326,10 +338,7 @@ export async function verifyCapabilityInvocation({
     verificationMethod,
     documentLoader
   })
-  const { valid, error } = result
-  // `dereferencedChain` is attached internally on success but is not part of
-  // the public `ProofValidateResult` type.
-  const { dereferencedChain } = result as { dereferencedChain?: IZcap[] }
+  const { valid, error, dereferencedChain } = result
   if (!valid) {
     return { verified: false, error }
   }
