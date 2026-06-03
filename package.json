@@ -34,18 +34,18 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@interop/data-integrity-core": "^6.1.0",
+    "@interop/data-integrity-core": "^6.1.1",
     "@interop/http-signature-header": "^5.0.2",
-    "@interop/zcap": "^10.1.0",
+    "@interop/zcap": "^11.0.1",
     "@scure/base": "^2.2.0",
     "pako": "^2.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@interop/ed25519-signature": "^7.0.0",
+    "@interop/ed25519-signature": "^7.0.1",
     "@interop/ed25519-verification-key": "^7.0.1",
     "@interop/http-signature-zcap-invoke": "^6.2.0",
-    "@interop/security-document-loader": "^9.2.0",
+    "@interop/security-document-loader": "^9.2.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",
@@ -60,7 +60,8 @@
     "vitest": "^4.1.7"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "authorization",

@@ -1,5 +1,17 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.0.2 - TBD
+
+### Changed
+- Update to work with latest `@interop/zcap@11.0.1` (which was converted to
+  TypeScript).
+- Type the `suite` option as the new exported `SignatureSuite` type (derived
+  from `@interop/zcap`'s `CapabilityInvocationOptions`) instead of `object`, to
+  match the suite type that `CapabilityInvocation` now expects.
+- Read `dereferencedChain` directly from the `CapabilityInvocation.validate()`
+  result now that it is part of the public `CapabilityValidateResult` type,
+  removing the previous internal cast.
+
 ## 12.0.1 - 2026-06-01
 
 ### Changed
