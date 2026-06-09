@@ -1,5 +1,12 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.0.3 - TBD
+
+### Changed
+- Update to latest dependencies, including `@interop/data-integrity-core@7`,
+  `@interop/ed25519-verification-key@8` (whose `export()` is now async), and
+  `@interop/zcap@11.0.2`.
+
 ## 12.0.2 - 2026-06-02
 
 ### Changed

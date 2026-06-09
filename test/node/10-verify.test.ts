@@ -6,7 +6,7 @@ import { createRootCapability, constants } from '@interop/zcap'
 import { Ed25519Signature2020 } from '@interop/ed25519-signature'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { signCapabilityInvocation } from '@interop/http-signature-zcap-invoke'
-import { securityDocumentLoader } from './document-loader.js'
+import { securityLoader } from '@interop/security-document-loader'
 import type { IVerificationMethod } from '@interop/data-integrity-core'
 import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
 import {
@@ -16,14 +16,6 @@ import {
 
 const { ZCAP_CONTEXT_URL } = constants
 
-// The mock controller is a DID, so its document uses the DID v1 context. This
-// context defines the `capabilityInvocation` verification relationship, which
-// lets jsonld-signatures authorize the verification method without framing the
-// controller document against the legacy `security/v2` context.
-const DID_CONTEXT_URL = 'https://www.w3.org/ns/did/v1'
-
-const controller = 'did:test:controller'
-
 const invocationResourceUrl = 'https://test.org/zcaps/foo'
 const method = 'GET'
 
@@ -31,9 +23,16 @@ let keyPair: Ed25519VerificationKey
 
 async function setup() {
   const expectedHost = 'test.org'
-  // the tests will use a mock didKey.
-  keyPair = await Ed25519VerificationKey.generate({ controller })
-  const keyId = keyPair.id as string
+  // Use a real `did:key` controller so that `@interop/security-document-loader`
+  // resolves both the controller DID document and the verification method via
+  // its built-in did:key resolver -- neither needs to be registered as a static
+  // document. For Ed25519, the did:key identifier and the verification method
+  // fragment are both the key's multibase fingerprint.
+  keyPair = await Ed25519VerificationKey.generate()
+  const controller = `did:key:${keyPair.fingerprint()}`
+  const keyId = `${controller}#${keyPair.fingerprint()}`
+  keyPair.controller = controller
+  keyPair.id = keyId
   // verify-mode suite; no signer needed to verify the delegation chain.
   const suite = new Ed25519Signature2020()
 
@@ -43,41 +42,14 @@ async function setup() {
     invocationTarget: invocationResourceUrl
   })
 
-  const documentLoader: IDocumentLoader = async uri => {
-    // the controller should return a didDocument
-    // with the ProofPurpose's term on it
-    // In this case that term is capabilityInvocation
-    if (uri === controller) {
-      const doc = {
-        id: controller,
-        '@context': DID_CONTEXT_URL,
-        capabilityInvocation: [keyId]
-      }
-      return {
-        contextUrl: null,
-        documentUrl: uri,
-        document: doc
-      }
-    }
-    // when we dereference the keyId for verification
-    // all we need is the publicNode
-    if (uri === keyId) {
-      const doc = keyPair.export({ publicKey: true, includeContext: true })
-      return {
-        contextUrl: null,
-        documentUrl: uri,
-        document: doc
-      }
-    }
-    if (uri === rootCapability.id) {
-      return {
-        contextUrl: null,
-        documentUrl: uri,
-        document: rootCapability
-      }
-    }
-    return securityDocumentLoader(uri)
-  }
+  // Build on top of `@interop/security-document-loader`, which bundles the
+  // security/zcap/key contexts and resolves `did:key` controllers and keys.
+  // Only the root capability must be registered: the zcap proof purpose
+  // dereferences `urn:zcap:root:...` ids through the document loader, and the
+  // loader has no handler that reconstructs root zcaps from their id.
+  const documentLoaderBuilder = securityLoader()
+  documentLoaderBuilder.addStatic(rootCapability.id, rootCapability)
+  const documentLoader = documentLoaderBuilder.build()
   const getVerifier: GetVerifier = async ({ keyId, documentLoader }) => {
     const { document } = (await documentLoader(keyId)) as {
       document: Record<string, unknown>
@@ -110,11 +82,13 @@ async function setup() {
     // method used in tests is always GET which maps to `read`
     expectedAction: 'read',
     expectedRootCapability: rootCapability.id,
+    controller,
     keyId,
     keyPair,
     suite,
     signed: signed as Record<string, string>,
     documentLoader,
+    documentLoaderBuilder,
     getVerifier
   }
 }
@@ -123,6 +97,8 @@ describe('verifyCapabilityInvocation', () => {
   describe('Ed25519VerificationKey2020', () => {
     let suite: Ed25519Signature2020
     let documentLoader: IDocumentLoader
+    let documentLoaderBuilder: ReturnType<typeof securityLoader>
+    let controller: string
     let keyId: string
     let getVerifier: GetVerifier
     let signed: Record<string, string>
@@ -137,6 +113,8 @@ describe('verifyCapabilityInvocation', () => {
         expectedRootCapability,
         suite,
         documentLoader,
+        documentLoaderBuilder,
+        controller,
         keyId,
         getVerifier,
         signed
@@ -242,21 +220,14 @@ describe('verifyCapabilityInvocation', () => {
       const pastDate = new Date(2020, 11, 17)
         .toISOString()
         .replace(/\.[0-9]{3}/, '')
-      const _documentLoader: IDocumentLoader = async url => {
-        if (keyId === url) {
-          const doc = keyPair.export({
-            publicKey: true,
-            includeContext: true
-          }) as unknown as Record<string, unknown>
-          doc.revoked = pastDate
-          return {
-            contextUrl: null,
-            documentUrl: url,
-            document: doc
-          }
-        }
-        return documentLoader(url)
-      }
+      // Override the verification method with a revoked variant; the other
+      // static documents (controller, root capability) remain registered.
+      const revokedKeyDocument = (await keyPair.export({
+        includeContext: true
+      })) as unknown as Record<string, unknown>
+      revokedKeyDocument.revoked = pastDate
+      documentLoaderBuilder.addStatic(keyId, revokedKeyDocument)
+      const _documentLoader = documentLoaderBuilder.build()
       try {
         result = await verifyCapabilityInvocation({
           url: invocationResourceUrl,
@@ -379,22 +350,14 @@ describe('verifyCapabilityInvocation', () => {
     it('should THROW if verificationMethod type is not supported', async () => {
       let result
       let error = null
-      const _documentLoader: IDocumentLoader = async uri => {
-        if (uri === keyId) {
-          const doc = {
-            id: uri,
-            '@context': ZCAP_CONTEXT_URL,
-            controller,
-            type: 'AESVerificationKey2001'
-          }
-          return {
-            contextUrl: null,
-            documentUrl: uri,
-            document: doc
-          }
-        }
-        return documentLoader(uri)
-      }
+      // Override the verification method with an unsupported key type.
+      documentLoaderBuilder.addStatic(keyId, {
+        id: keyId,
+        '@context': ZCAP_CONTEXT_URL,
+        controller,
+        type: 'AESVerificationKey2001'
+      })
+      const _documentLoader = documentLoaderBuilder.build()
       try {
         result = await verifyCapabilityInvocation({
           url: invocationResourceUrl,

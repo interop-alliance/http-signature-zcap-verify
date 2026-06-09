@@ -5,27 +5,31 @@ import { createRootCapability } from '@interop/zcap'
 import { Ed25519Signature2020 } from '@interop/ed25519-signature'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { signCapabilityInvocation } from '@interop/http-signature-zcap-invoke'
-import { securityDocumentLoader } from '../node/document-loader.js'
+import { securityLoader } from '@interop/security-document-loader'
 import type { IKeyPairCore, IVerificationMethod } from '@interop/data-integrity-core'
 import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
 import { verifyCapabilityInvocation } from '../../src/index.js'
 
-const controller = 'did:test:controller'
 const invocationResourceUrl = 'https://test.org/zcaps/foo'
 const method = 'GET'
-const DID_CONTEXT_URL = 'https://www.w3.org/ns/did/v1'
 
 /**
  * Runs a full happy-path capability-invocation verification entirely in the
- * browser. The document loader is self-contained (it serves the mock
- * controller, key, and root capability documents); the verification path does
- * not require any additional remote contexts.
+ * browser. The `did:key` controller and its verification method resolve through
+ * `@interop/security-document-loader`'s built-in did:key resolver; only the
+ * root capability is registered as a static document.
  *
  * @returns {Promise<boolean>} Whether the invocation verified.
  */
 export async function runHappyPath(): Promise<boolean> {
-  const keyPair = await Ed25519VerificationKey.generate({ controller })
-  const keyId = keyPair.id as string
+  // Use a real `did:key` controller so the loader resolves the controller DID
+  // document and the verification method automatically (for Ed25519, both the
+  // did:key id and the key id fragment are the key's multibase fingerprint).
+  const keyPair = await Ed25519VerificationKey.generate()
+  const controller = `did:key:${keyPair.fingerprint()}`
+  const keyId = `${controller}#${keyPair.fingerprint()}`
+  keyPair.controller = controller
+  keyPair.id = keyId
   const suite = new Ed25519Signature2020()
 
   const rootCapability = createRootCapability({
@@ -33,30 +37,12 @@ export async function runHappyPath(): Promise<boolean> {
     invocationTarget: invocationResourceUrl
   })
 
-  const documentLoader: IDocumentLoader = async uri => {
-    if (uri === controller) {
-      return {
-        contextUrl: null,
-        documentUrl: uri,
-        document: {
-          id: controller,
-          '@context': DID_CONTEXT_URL,
-          capabilityInvocation: [keyId]
-        }
-      }
-    }
-    if (uri === keyId) {
-      return {
-        contextUrl: null,
-        documentUrl: uri,
-        document: keyPair.export({ publicKey: true, includeContext: true })
-      }
-    }
-    if (uri === rootCapability.id) {
-      return { contextUrl: null, documentUrl: uri, document: rootCapability }
-    }
-    return securityDocumentLoader(uri)
-  }
+  // The loader already bundles the security/zcap/key contexts and resolves
+  // `did:key` controllers and keys; only the root capability must be registered,
+  // since the zcap proof purpose dereferences `urn:zcap:root:...` ids through it.
+  const loaderBuilder = securityLoader()
+  loaderBuilder.addStatic(rootCapability.id, rootCapability)
+  const documentLoader = loaderBuilder.build()
 
   const getVerifier = async ({
     keyId,
@@ -113,7 +99,8 @@ export async function runHappyPath(): Promise<boolean> {
  * @returns {Promise<boolean>} Whether a bundled context resolved to a document.
  */
 export async function loaderResolvesBundledContext(): Promise<boolean> {
-  const { document } = await securityDocumentLoader(
+  const documentLoader = securityLoader().build()
+  const { document } = await documentLoader(
     'https://w3id.org/security/multikey/v1'
   )
   return document != null
