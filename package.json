@@ -35,9 +35,9 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
-    "@interop/data-integrity-core": "^7.0.0",
+    "@interop/data-integrity-core": "^8.0.0",
     "@interop/http-signature-header": "^5.0.2",
-    "@interop/zcap": "^11.0.2",
+    "@interop/zcap": "^11.0.3",
     "@scure/base": "^2.2.0",
     "pako": "^2.0.4"
   },
@@ -45,8 +45,8 @@
     "@eslint/js": "^10.0.1",
     "@interop/ed25519-signature": "^7.1.1",
     "@interop/ed25519-verification-key": "^8.0.0",
-    "@interop/http-signature-zcap-invoke": "^6.2.2",
-    "@interop/security-document-loader": "^9.2.3",
+    "@interop/http-signature-zcap-invoke": "^6.2.3",
+    "@interop/security-document-loader": "^9.3.0",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",
