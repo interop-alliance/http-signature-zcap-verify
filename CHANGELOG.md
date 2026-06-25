@@ -1,6 +1,8 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## Unreleased - TBD
+## 12.1.0 - 2026-06-25
+
+Matches upstream `@digitalbazaar/http-signature-zcap-verify@11.2.0`.
 
 ### Changed
 - The invocation target `url` is now treated as absolute for **any** URI scheme,
