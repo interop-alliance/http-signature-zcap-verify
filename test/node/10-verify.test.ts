@@ -21,8 +21,11 @@ const method = 'GET'
 
 let keyPair: Ed25519VerificationKey
 
-async function setup() {
-  const expectedHost = 'test.org'
+async function setup({
+  url = invocationResourceUrl,
+  invocationTarget = url,
+  expectedHost = 'test.org'
+}: { url?: string; invocationTarget?: string; expectedHost?: string } = {}) {
   // Use a real `did:key` controller so that `@interop/security-document-loader`
   // resolves both the controller DID document and the verification method via
   // its built-in did:key resolver -- neither needs to be registered as a static
@@ -39,7 +42,7 @@ async function setup() {
   // this is the root zCap
   const rootCapability = createRootCapability({
     controller,
-    invocationTarget: invocationResourceUrl
+    invocationTarget
   })
 
   // Build on top of `@interop/security-document-loader`, which bundles the
@@ -68,16 +71,24 @@ async function setup() {
   const invocationSigner = keyPair.signer()
   invocationSigner.id = keyId
   const signed = await signCapabilityInvocation({
-    url: invocationResourceUrl,
+    url,
     method,
-    headers: { keyId },
+    // Set `host` explicitly: `signCapabilityInvocation` otherwise derives it via
+    // `new URL(url).host`, which throws on a relative `url` and is empty for a
+    // non-HTTP scheme such as `did:`. Decouple the signed `url` from the root
+    // target by passing `capability` so a relative `url` can map to an absolute
+    // `invocationTarget`.
+    headers: { keyId, host: expectedHost },
     json: { foo: true },
     invocationSigner,
-    capabilityAction: 'read'
+    capabilityAction: 'read',
+    capability: rootCapability.id
   })
   // in browsers we need to set the host explicitly
   signed.host = signed.host || expectedHost
   return {
+    url,
+    invocationTarget,
     expectedHost,
     // method used in tests is always GET which maps to `read`
     expectedAction: 'read',
@@ -668,6 +679,144 @@ describe('verifyCapabilityInvocation', () => {
       expect(result?.error?.message).toBe(
         'capability-invocation was not in the request'
       )
+    })
+  })
+
+  describe('invocation target scheme', () => {
+    it('should use an absolute https url verbatim', async () => {
+      const url = 'https://localhost/zcaps/foo'
+      const {
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, expectedHost: 'localhost' })
+      const result = await verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: url
+      })
+      expect(result.verified).toBe(true)
+    })
+
+    it('should use an absolute http url verbatim (non-https scheme)', async () => {
+      const url = 'http://localhost:8080/zcaps/foo'
+      const {
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, expectedHost: 'localhost:8080' })
+      const result = await verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: url
+      })
+      expect(result.verified).toBe(true)
+    })
+
+    it('should use an absolute did url verbatim (DID-relative target)', async () => {
+      const url = 'did:example:123/zcaps/foo'
+      const {
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, expectedHost: 'localhost' })
+      const result = await verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: url
+      })
+      expect(result.verified).toBe(true)
+    })
+
+    it('should prefix a relative url with https and the host', async () => {
+      // The signed `url` is relative; the resolved invocation target (and the
+      // root capability) is the absolute `https://${host}${url}`.
+      const url = '/zcaps/foo'
+      const expectedHost = 'test.org'
+      const invocationTarget = `https://${expectedHost}${url}`
+      const {
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, invocationTarget, expectedHost })
+      const result = await verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: invocationTarget
+      })
+      expect(result.verified).toBe(true)
+    })
+
+    it('should treat a relative url with an unencoded colon as relative', async () => {
+      // `/foo:bar` carries a colon but is not an absolute URI (no leading
+      // scheme), so it must be prefixed with the host, not used verbatim.
+      const url = '/zcaps/foo:bar'
+      const expectedHost = 'test.org'
+      const invocationTarget = `https://${expectedHost}${url}`
+      const {
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, invocationTarget, expectedHost })
+      const result = await verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: invocationTarget
+      })
+      expect(result.verified).toBe(true)
     })
   })
 })
