@@ -20,6 +20,14 @@ import { base64decode, base64url } from './baseX.js'
 import pako from 'pako'
 
 /**
+ * Matches the leading `scheme:` of an absolute URI per the RFC 3986 scheme
+ * grammar (`ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )`). Used to decide
+ * whether an invocation `url` is already absolute (any scheme -- `https:`,
+ * `did:`, `urn:`, ...) or a relative URL that must be prefixed with the host.
+ */
+const ABSOLUTE_URI_SCHEME = /^[a-z][a-z0-9+.-]*:/i
+
+/**
  * A jsonld-signatures signature suite instance (or instances) used to verify
  * the capability delegation chain, e.g. `new Ed25519Signature2020()`. Derived
  * from `@interop/zcap`'s public option type, which carries the underlying
@@ -39,7 +47,10 @@ export type GetVerifier = (options: {
 
 /**
  * @param options {object} - Options to use.
- * @param options.url {string} - The url of the request.
+ * @param options.url {string} - The url of the request. Used as the invocation
+ *   target. An absolute URI (any scheme -- `https:`, `http:`, `did:`, `urn:`,
+ *   ...) is used verbatim; a relative url is resolved against the request host
+ *   as `https://${host}${url}`.
  * @param options.method {string} - The HTTP request method.
  * @param options.headers {object} - The headers from the request.
  * @param options.getVerifier {GetVerifier} - An async function to
@@ -305,11 +316,14 @@ export async function verifyCapabilityInvocation({
   })
   // invocation target must match absolute url
   let invocationTarget
-  // do not simply check for a colon (`:`) to find a relative URL
-  // because some applications allow and pass non-conformant
-  // relative URLs with unencoded colons (and we accept those
-  // because it is common to do so despite non-conformance)
-  if (url.startsWith('https://') || url.startsWith('http://')) {
+  // An absolute URI is used verbatim, regardless of scheme: `https:`/`http:`
+  // for HTTP targets, but also `did:`, `urn:`, etc. so that DID-relative and
+  // other non-HTTP invocation targets are not rewritten into an HTTPS url.
+  // Match the RFC 3986 scheme grammar (`ALPHA *( ALPHA / DIGIT / "+" / "-" /
+  // "." )` followed by `:`) rather than a bare colon: that keeps non-conformant
+  // relative URLs that carry an unencoded colon in a path segment (e.g.
+  // `/foo:bar`) classified as relative, since they do not begin with a scheme.
+  if (ABSOLUTE_URI_SCHEME.test(url)) {
     invocationTarget = url
   } else {
     // If encountering a relative URL, assume HTTPS

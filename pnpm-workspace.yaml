@@ -1,4 +1,1 @@
 minimumReleaseAgeExclude:
-  - '@interop/http-digest-header@3.0.0'
-  - '@interop/http-signature-zcap-invoke@6.2.3'
-  - '@interop/zcap@11.0.3'

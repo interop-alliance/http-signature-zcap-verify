@@ -1,5 +1,16 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## Unreleased - TBD
+
+### Changed
+- The invocation target `url` is now treated as absolute for **any** URI scheme,
+  not just `https:`/`http:`. An absolute `url` (e.g. `did:`, `urn:`) is used as
+  the invocation target verbatim; only a relative `url` (no leading scheme) is
+  resolved against the request host as `https://${host}${url}`. This enables
+  DID-relative invocation targets. Scheme detection uses the RFC 3986 scheme
+  grammar, so non-conformant relative URLs that carry an unencoded colon in a
+  path segment (e.g. `/foo:bar`) are still treated as relative.
+
 ## 12.0.4 - 2026-06-13
 
 ### Changed

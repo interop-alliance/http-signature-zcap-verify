@@ -110,7 +110,7 @@ invoker, verificationMethod, dereferencedChain }`.
 
 | Option                     | Description                                                               |
 | -------------------------- | ------------------------------------------------------------------------- |
-| `url`, `method`, `headers` | The incoming request.                                                     |
+| `url`, `method`, `headers` | The incoming request. An absolute `url` (any scheme -- `https:`, `did:`, ...) is used as the invocation target as-is; a relative `url` resolves to `https://${host}${url}`. |
 | `getVerifier`              | Async function returning `{ verifier, verificationMethod }` for a key id. |
 | `documentLoader`           | JSON-LD loader for the controller, root capability, and contexts.         |
 | `expectedHost`             | The expected `Host` header (string or array of allowed hosts).            |
