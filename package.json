@@ -1,7 +1,7 @@
 {
   "name": "@interop/http-signature-zcap-verify",
   "description": "A library for invoking Authorization Capabilities via HTTP signatures",
-  "version": "12.1.0",
+  "version": "12.1.1",
   "type": "module",
   "scripts": {
     "build": "pnpm run clear && tsc",
@@ -37,7 +37,7 @@
   "dependencies": {
     "@interop/data-integrity-core": "^8.1.0",
     "@interop/http-signature-header": "^5.0.2",
-    "@interop/zcap": "^11.0.3",
+    "@interop/zcap": "^11.0.4",
     "@scure/base": "^2.2.0",
     "pako": "^2.0.4"
   },
@@ -46,7 +46,7 @@
     "@interop/ed25519-signature": "^7.1.2",
     "@interop/ed25519-verification-key": "^8.0.2",
     "@interop/http-signature-zcap-invoke": "^6.2.3",
-    "@interop/security-document-loader": "^9.4.0",
+    "@interop/security-document-loader": "^9.4.1",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",

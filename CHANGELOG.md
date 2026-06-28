@@ -1,5 +1,10 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.1.1 - 2026-06-28
+
+### Fixed
+- Update to latest zcap and d-i-core deps.
+
 ## 12.1.0 - 2026-06-25
 
 Matches upstream `@digitalbazaar/http-signature-zcap-verify@11.2.0`.
