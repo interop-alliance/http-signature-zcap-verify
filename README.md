@@ -125,3 +125,10 @@ invoker, verificationMethod, dereferencedChain }`.
 See the JSDoc on `verifyCapabilityInvocation` for the full list, including
 `additionalHeaders`, `beforeValidatePurpose`, `inspectCapabilityChain`,
 `maxChainLength`, and `maxDelegationTtl`.
+
+## Contribute
+
+PRs accepted.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) -- code style and contribution
+conventions.
