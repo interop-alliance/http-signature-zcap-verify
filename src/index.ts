@@ -138,6 +138,41 @@ interface VerificationError extends Error {
 }
 
 /**
+ * Decodes the embedded delegated capability carried by a
+ * `Capability-Invocation` header's `capability` parameter -- the
+ * `base64url(gzip(json))` wire form produced by
+ * `@interop/http-signature-zcap-invoke`'s `signCapabilityInvocation`.
+ * Exported so consumers can inspect a submitted capability chain without
+ * running the full verification (e.g. to name a failure cause after
+ * verification has already failed).
+ *
+ * @param options {object} - Options to use.
+ * @param options.encoded {string} - The `capability` parameter value from a
+ *   parsed `Capability-Invocation` header.
+ *
+ * @returns {IZcap} The decoded capability.
+ * @throws {Error} A `DataError`-named error when the value is improperly
+ *   encoded.
+ */
+export function decodeEmbeddedCapability({
+  encoded
+}: {
+  encoded: string
+}): IZcap {
+  try {
+    return JSON.parse(
+      new TextDecoder('utf-8').decode(pako.ungzip(base64url.decode(encoded)))
+    ) as IZcap
+  } catch {
+    const error = new Error(
+      'Capability in Capability-Invocation header is improperly encoded.'
+    )
+    error.name = 'DataError'
+    throw error
+  }
+}
+
+/**
  * Verifies a zcap invocation in the form of an http-signature header.
  *
  * @param options {VerifyCapabilityInvocationOptions} - Options to use.
@@ -271,17 +306,9 @@ export async function verifyCapabilityInvocation({
     capability = parsedInvocationHeader.params.capability as string | undefined
     if (capability) {
       try {
-        capability = JSON.parse(
-          new TextDecoder('utf-8').decode(
-            pako.ungzip(base64url.decode(capability))
-          )
-        )
-      } catch {
-        const error = new Error(
-          'Capability in Capability-Invocation header is improperly encoded.'
-        )
-        error.name = 'DataError'
-        return { verified: false, error }
+        capability = decodeEmbeddedCapability({ encoded: capability })
+      } catch (err) {
+        return { verified: false, error: err as Error }
       }
     }
     if (!(capability as { parentCapability?: unknown }).parentCapability) {

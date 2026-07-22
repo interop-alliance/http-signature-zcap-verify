@@ -1,5 +1,15 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.2.0 - TBD
+
+### Added
+
+- Export `decodeEmbeddedCapability()`, the decoder for the
+  `Capability-Invocation` header's embedded `capability` parameter
+  (`base64url(gzip(json))`), so consumers can inspect a submitted capability
+  chain without running the full verification. The internal decode path now
+  uses it.
+
 ## 12.1.2 - 2026-07-17
 
 ### Fixed
