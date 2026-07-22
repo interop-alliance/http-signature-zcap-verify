@@ -1,6 +1,6 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## 12.2.0 - TBD
+## 12.2.0 - 2026-07-22
 
 ### Added
 
