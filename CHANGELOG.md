@@ -1,5 +1,11 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.2.2 - TBD
+
+### Changed
+
+- Update to latest `http-signature-header` and `security-document-loader`.
+
 ## 12.2.1 - 2026-08-18
 
 ### Changed
