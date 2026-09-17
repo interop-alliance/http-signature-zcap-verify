@@ -1,5 +1,11 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.2.3 - TBD
+
+### Changed
+
+- Update to latest `zcap` spec (empty chain guard).
+
 ## 12.2.2 - 2026-08-27
 
 ### Changed
