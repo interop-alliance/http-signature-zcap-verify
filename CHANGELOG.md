@@ -1,5 +1,10 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 12.2.4 - TBD
+
+### Changed
+- Update to latest `@interop/data-integrity-core@8.8.0`.
+
 ## 12.2.3 - 2026-09-16
 
 ### Changed
