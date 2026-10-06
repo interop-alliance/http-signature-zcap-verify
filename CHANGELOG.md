@@ -1,6 +1,6 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## 12.2.5 - TBD
+## 12.2.5 - 2026-10-06
 
 ### Changed
 - Update to latest `@interop/jsonld-signatures@11.8.7`.
