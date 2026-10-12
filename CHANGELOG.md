@@ -1,6 +1,6 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## 12.2.6 - TBD
+## 12.2.6 - 2026-10-12
 
 ### Changed
 - Update to latest jsigs and di core.
