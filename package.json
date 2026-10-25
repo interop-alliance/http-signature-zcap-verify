@@ -37,16 +37,16 @@
   "dependencies": {
     "@interop/data-integrity-core": "^8.9.0",
     "@interop/http-signature-header": "^5.0.3",
-    "@interop/zcap": "^11.3.5",
+    "@interop/zcap": "^11.4.0",
     "@scure/base": "^2.2.0",
     "pako": "^2.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@interop/ed25519-signature": "^7.2.3",
+    "@interop/ed25519-signature": "^7.2.5",
     "@interop/ed25519-verification-key": "^8.2.2",
     "@interop/http-signature-zcap-invoke": "^6.3.0",
-    "@interop/security-document-loader": "^10.1.4",
+    "@interop/security-document-loader": "^10.1.6",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.9.1",
     "@vitest/coverage-v8": "^4.1.7",

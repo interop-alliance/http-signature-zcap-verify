@@ -6,7 +6,10 @@ import { Ed25519Signature2020 } from '@interop/ed25519-signature'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { signCapabilityInvocation } from '@interop/http-signature-zcap-invoke'
 import { securityLoader } from '@interop/security-document-loader'
-import type { IKeyPairCore, IVerificationMethod } from '@interop/data-integrity-core'
+import type {
+  IKeyPairCore,
+  IVerificationMethod
+} from '@interop/data-integrity-core'
 import type { IDocumentLoader } from '@interop/data-integrity-core/loader'
 import { verifyCapabilityInvocation } from '../../src/index.js'
 

@@ -299,9 +299,7 @@ export async function verifyCapabilityInvocation({
   }
 
   let capability = parsedInvocationHeader.params.id as
-    | string
-    | IZcap
-    | undefined
+    string | IZcap | undefined
   if (!capability) {
     capability = parsedInvocationHeader.params.capability as string | undefined
     if (capability) {
@@ -396,10 +394,9 @@ export async function verifyCapabilityInvocation({
   }
 }
 
-function _lowerCaseObjectKeys(obj: Record<string, string>): Record<
-  string,
-  string
-> {
+function _lowerCaseObjectKeys(
+  obj: Record<string, string>
+): Record<string, string> {
   const newObject: Record<string, string> = {}
   for (const [key, value] of Object.entries(obj)) {
     newObject[key.toLowerCase()] = value

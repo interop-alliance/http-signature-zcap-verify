@@ -682,6 +682,95 @@ describe('verifyCapabilityInvocation', () => {
     })
   })
 
+  describe('invocation target attenuation', () => {
+    /**
+     * Signs a request for `url` under a root capability on `invocationTarget`
+     * and verifies it, with or without `allowTargetAttenuation`.
+     */
+    async function verifyAttenuated({
+      url,
+      invocationTarget,
+      allowTargetAttenuation
+    }: {
+      url: string
+      invocationTarget: string
+      allowTargetAttenuation?: boolean
+    }) {
+      const {
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, invocationTarget })
+      return verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        // The server expects the invoked URL itself; attenuation is judged
+        // between that and the capability's `invocationTarget`.
+        expectedTarget: url,
+        allowTargetAttenuation
+      })
+    }
+
+    const invocationTarget = 'https://test.org/space/abc'
+
+    it('should verify a url beneath the target when attenuation is allowed', async () => {
+      const result = await verifyAttenuated({
+        url: `${invocationTarget}/collection/doc`,
+        invocationTarget,
+        allowTargetAttenuation: true
+      })
+      expect(result.verified).toBe(true)
+    })
+
+    it('should NOT verify a url beneath the target when attenuation is not allowed', async () => {
+      const result = await verifyAttenuated({
+        url: `${invocationTarget}/collection/doc`,
+        invocationTarget
+      })
+      expect(result.verified).toBe(false)
+    })
+
+    it('should NOT verify a url in a sibling authority hierarchy', async () => {
+      const result = await verifyAttenuated({
+        url: `${invocationTarget}-evil`,
+        invocationTarget,
+        allowTargetAttenuation: true
+      })
+      expect(result.verified).toBe(false)
+    })
+
+    it('should verify a new query variable on a query-bearing target', async () => {
+      const queryTarget = `${invocationTarget}/query?a=1`
+      const result = await verifyAttenuated({
+        url: `${queryTarget}&b=2`,
+        invocationTarget: queryTarget,
+        allowTargetAttenuation: true
+      })
+      expect(result.verified).toBe(true)
+    })
+
+    it('should NOT verify a path suffix on a query-bearing target', async () => {
+      const queryTarget = `${invocationTarget}/query?a=1`
+      const result = await verifyAttenuated({
+        url: `${queryTarget}/evil`,
+        invocationTarget: queryTarget,
+        allowTargetAttenuation: true
+      })
+      expect(result.verified).toBe(false)
+    })
+  })
+
   describe('invocation target scheme', () => {
     it('should use an absolute https url verbatim', async () => {
       const url = 'https://localhost/zcaps/foo'
