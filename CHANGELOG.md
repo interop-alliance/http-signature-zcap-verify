@@ -1,6 +1,6 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
-## 12.2.7 - TBD
+## 12.2.7 - 2026-10-24
 
 ### Changed
 - Update to latest zcap (export isValidTarget).
