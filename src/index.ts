@@ -3,6 +3,8 @@
  */
 import { CapabilityInvocation, constants } from '@interop/zcap'
 import type {
+  CapabilityCaveat,
+  CaveatHandler,
   InspectCapabilityChain,
   CapabilityInvocationOptions
 } from '@interop/zcap'
@@ -71,11 +73,16 @@ export type GetVerifier = (options: {
  *   based on a hierarchical RESTful URL structure.
  * @param [options.additionalHeaders=[]] {string[]} - Additional headers
  *   to verify.
+ * @param [options.allowedContexts] {string[]} - Extra JSON-LD context URLs a
+ *   delegated zcap may list, beyond the zcap context and the context of
+ *   `suite`.
  * @param [options.beforeValidatePurpose] {Function} - A function that is
  *   called prior to validating the proof purpose and is passed the purpose
  *   instance, proof meta data, and capability information.
  * @param [options.inspectCapabilityChain] {Function} - A function that can
  *   inspect a capability chain.
+ * @param [options.maxCaveats] {number} - The maximum number of caveats in
+ *   the capability chain, counted across all of its zcaps.
  * @param [options.maxChainLength] {number} - The maximum length of the
  *   capability delegation chain.
  * @param [options.maxDelegationTtl] {number} - The maximum milliseconds to
@@ -88,6 +95,9 @@ export type GetVerifier = (options: {
  *   invocation expiration time against `now`.
  * @param [options.now=now] {number|Date} - A unix timestamp or an
  *   instance of Date.
+ * @param [options.supportedCaveats] {Map<string, CaveatHandler>} - A `Map` of
+ *   caveat type to async caveat handler. A chain that carries a caveat with
+ *   no handler here does not verify.
  */
 export interface VerifyCapabilityInvocationOptions {
   url: string
@@ -102,6 +112,7 @@ export interface VerifyCapabilityInvocationOptions {
   suite: SignatureSuite
   allowTargetAttenuation?: boolean
   additionalHeaders?: string[]
+  allowedContexts?: string[]
   beforeValidatePurpose?: (params: {
     purpose: unknown
     proof: unknown
@@ -109,10 +120,12 @@ export interface VerifyCapabilityInvocationOptions {
     capabilityAction: unknown
   }) => Promise<void> | void
   inspectCapabilityChain?: InspectCapabilityChain
+  maxCaveats?: number
   maxChainLength?: number
   maxClockSkew?: number
   maxDelegationTtl?: number
   now?: number | Date
+  supportedCaveats?: Map<string, CaveatHandler>
 }
 
 /**
@@ -123,6 +136,11 @@ export interface VerifyCapabilityInvocationResult {
   error?: Error
   capability?: string | IZcap
   capabilityAction?: unknown
+  /**
+   * The caveats found in the chain (root to tail), each with the capability
+   * that carries it. Empty when the chain has none.
+   */
+  caveats?: CapabilityCaveat[]
   controller?: string
   dereferencedChain?: IZcap[]
   invoker?: string
@@ -193,12 +211,15 @@ export async function verifyCapabilityInvocation({
   suite,
   additionalHeaders = [],
   allowTargetAttenuation = false,
+  allowedContexts,
   beforeValidatePurpose,
   inspectCapabilityChain,
+  maxCaveats,
   maxChainLength,
   maxClockSkew = 300,
   maxDelegationTtl,
-  now = Math.floor(Date.now() / 1000)
+  now = Math.floor(Date.now() / 1000),
+  supportedCaveats
 }: VerifyCapabilityInvocationOptions): Promise<VerifyCapabilityInvocationResult> {
   if (now instanceof Date) {
     now = Math.floor(now.getTime() / 1000)
@@ -328,16 +349,19 @@ export async function verifyCapabilityInvocation({
   // check capability invocation
   const purpose = new CapabilityInvocation({
     allowTargetAttenuation,
+    allowedContexts,
     // `date` is in milliseconds and `now` is in seconds, so convert
     date: now * 1000,
     expectedAction,
     expectedRootCapability,
     expectedTarget,
     inspectCapabilityChain,
+    maxCaveats,
     maxChainLength,
     maxClockSkew,
     maxDelegationTtl,
-    suite
+    suite,
+    supportedCaveats
   })
   // invocation target must match absolute url
   let invocationTarget
@@ -377,7 +401,7 @@ export async function verifyCapabilityInvocation({
     verificationMethod,
     documentLoader
   })
-  const { valid, error, dereferencedChain } = result
+  const { valid, error, dereferencedChain, caveats } = result
   if (!valid) {
     return { verified: false, error }
   }
@@ -386,6 +410,7 @@ export async function verifyCapabilityInvocation({
   return {
     capability,
     capabilityAction,
+    caveats,
     controller,
     dereferencedChain,
     invoker: controller,

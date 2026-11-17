@@ -2,7 +2,11 @@
  * Copyright (c) 2020-2026 Digital Bazaar, Inc. and Interop Alliance. All rights reserved.
  */
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createRootCapability, constants } from '@interop/zcap'
+import {
+  createRootCapability,
+  constants,
+  type CaveatHandler
+} from '@interop/zcap'
 import { Ed25519Signature2020 } from '@interop/ed25519-signature'
 import { Ed25519VerificationKey } from '@interop/ed25519-verification-key'
 import { signCapabilityInvocation } from '@interop/http-signature-zcap-invoke'
@@ -24,8 +28,14 @@ let keyPair: Ed25519VerificationKey
 async function setup({
   url = invocationResourceUrl,
   invocationTarget = url,
-  expectedHost = 'test.org'
-}: { url?: string; invocationTarget?: string; expectedHost?: string } = {}) {
+  expectedHost = 'test.org',
+  caveat
+}: {
+  url?: string
+  invocationTarget?: string
+  expectedHost?: string
+  caveat?: { type: string }
+} = {}) {
   // Use a real `did:key` controller so that `@interop/security-document-loader`
   // resolves both the controller DID document and the verification method via
   // its built-in did:key resolver -- neither needs to be registered as a static
@@ -40,10 +50,10 @@ async function setup({
   const suite = new Ed25519Signature2020()
 
   // this is the root zCap
-  const rootCapability = createRootCapability({
-    controller,
-    invocationTarget
-  })
+  const rootCapability = {
+    ...createRootCapability({ controller, invocationTarget }),
+    ...(caveat && { caveat })
+  }
 
   // Build on top of `@interop/security-document-loader`, which bundles the
   // security/zcap/key contexts and resolves `did:key` controllers and keys.
@@ -768,6 +778,119 @@ describe('verifyCapabilityInvocation', () => {
         allowTargetAttenuation: true
       })
       expect(result.verified).toBe(false)
+    })
+  })
+
+  describe('caveats', () => {
+    const caveat = { type: 'urn:example:caveat:OwnResourcesOnly' }
+
+    /**
+     * Signs a request under a root capability that carries `caveat` and
+     * verifies it with the given caveat options.
+     */
+    async function verifyWithCaveat({
+      supportedCaveats,
+      maxCaveats
+    }: {
+      supportedCaveats?: Map<string, CaveatHandler>
+      maxCaveats?: number
+    } = {}) {
+      const {
+        url,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ caveat })
+      return verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: url,
+        supportedCaveats,
+        maxCaveats
+      })
+    }
+
+    it('should NOT verify a chain with an unsupported caveat', async () => {
+      const result = await verifyWithCaveat()
+      expect(result.verified).toBe(false)
+      expect(result.error?.name).toBe('UnsupportedCaveatError')
+    })
+
+    it('should verify when a handler accepts the caveat', async () => {
+      const seen: unknown[] = []
+      const result = await verifyWithCaveat({
+        supportedCaveats: new Map([
+          [
+            caveat.type,
+            async options => {
+              seen.push(options.caveat)
+              return { valid: true }
+            }
+          ]
+        ])
+      })
+      expect(result.verified).toBe(true)
+      expect(seen).toEqual([caveat])
+      expect(result.caveats).toHaveLength(1)
+      expect(result.caveats?.[0]?.caveat).toEqual(caveat)
+    })
+
+    it('should NOT verify when a handler rejects the caveat', async () => {
+      const result = await verifyWithCaveat({
+        supportedCaveats: new Map([
+          [caveat.type, async () => ({ valid: false })]
+        ])
+      })
+      expect(result.verified).toBe(false)
+      expect(result.error?.name).toBe('CaveatNotSatisfiedError')
+    })
+
+    it('should NOT verify a chain with more than `maxCaveats` caveats', async () => {
+      const result = await verifyWithCaveat({
+        supportedCaveats: new Map([
+          [caveat.type, async () => ({ valid: true })]
+        ]),
+        maxCaveats: 0
+      })
+      expect(result.verified).toBe(false)
+    })
+
+    it('should return an empty `caveats` list for a chain with none', async () => {
+      const {
+        url,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup()
+      const result = await verifyCapabilityInvocation({
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: url
+      })
+      expect(result.verified).toBe(true)
+      expect(result.caveats).toEqual([])
     })
   })
 

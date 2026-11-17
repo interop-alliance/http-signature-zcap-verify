@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@interop/data-integrity-core':
-        specifier: ^8.9.0
-        version: 8.9.0
+        specifier: ^8.12.0
+        version: 8.12.0
       '@interop/http-signature-header':
         specifier: ^5.0.3
         version: 5.0.3
       '@interop/zcap':
-        specifier: ^11.4.0
-        version: 11.4.0
+        specifier: ^12.0.0
+        version: 12.0.0
       '@scure/base':
         specifier: ^2.2.0
         version: 2.4.0
@@ -202,6 +202,10 @@ packages:
       react-native-get-random-values:
         optional: true
 
+  '@interop/data-integrity-core@8.12.0':
+    resolution: {integrity: sha512-wQoFUjN1xkF6hmyWz5KDb4uNlUGkRNvM6c0UXGMTAxMMlTZeEbR7bszkbKU4UtJdpgkuMFYh7YdeXeOTMsluoQ==}
+    engines: {node: '>=24.0'}
+
   '@interop/data-integrity-core@8.9.0':
     resolution: {integrity: sha512-FGj+D6VLb3q+UxAA5PRB0caoj5/cdpDLRW7Hu5cMI7xnpsEABnEi5leOL/BonTtSM6T/OdE/cuTOcrba0TGPdQ==}
     engines: {node: '>=24.0'}
@@ -285,8 +289,8 @@ packages:
     resolution: {integrity: sha512-4/sL9vP6cwpE/oicx+JvfNrS4PoX10kbJGJRG2eYBkPAKUKqOxvb4z3SODR6334b1Htr5WtOxudPNTxVgutpIg==}
     engines: {node: '>=24.0'}
 
-  '@interop/zcap@11.4.0':
-    resolution: {integrity: sha512-Hhv0hV2xAlY8BWO5IxADi6w3L9qOdcM37R6ATMoicH1K7JO5vDjd96BwZ4SIkx+JSt6EWJjbO5Aejk4SMzJq/w==}
+  '@interop/zcap@12.0.0':
+    resolution: {integrity: sha512-by5d+WfZI8iuqbI/keZlTz1w9wXtgMv/PXSqDx/Jr5AZujUmniaNSKj+BFktMTvEjyZHnvq7SGbCuA5D3Rud9A==}
     engines: {node: '>=24.0'}
 
   '@jridgewell/resolve-uri@3.1.2':
@@ -1320,25 +1324,29 @@ snapshots:
     dependencies:
       '@scure/base': 2.4.0
 
+  '@interop/data-integrity-core@8.12.0':
+    dependencies:
+      '@scure/base': 2.4.0
+
   '@interop/data-integrity-core@8.9.0':
     dependencies:
       '@scure/base': 2.4.0
 
   '@interop/data-integrity-proof@3.4.8':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/jsonld-signatures': 11.9.0
       '@noble/hashes': 2.4.0
       '@scure/base': 2.4.0
 
   '@interop/did-io@4.2.2':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/lru-memoize': 4.0.3
 
   '@interop/did-method-key@7.5.1':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/did-io': 4.2.2
       '@interop/ed25519-verification-key': 8.2.2
       '@interop/x25519-key-agreement-key': 5.4.1
@@ -1348,7 +1356,7 @@ snapshots:
   '@interop/did-web-resolver@6.5.0':
     dependencies:
       '@interop/bnid': 6.0.2
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/did-io': 4.2.2
       '@interop/http-client': 1.0.5
       did-context: 3.1.1
@@ -1357,12 +1365,12 @@ snapshots:
 
   '@interop/ecdsa-multikey@2.4.2':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@scure/base': 2.4.0
 
   '@interop/ed25519-signature@7.2.5(@interop/jsonld-signatures@11.9.0)':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/data-integrity-proof': 3.4.8
       '@interop/ed25519-verification-key': 8.2.2
       '@interop/jsonld': 9.0.3
@@ -1376,7 +1384,7 @@ snapshots:
 
   '@interop/ed25519-verification-key@8.2.2':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@noble/ed25519': 3.2.0
       '@noble/hashes': 2.4.0
       '@scure/base': 2.4.0
@@ -1394,7 +1402,7 @@ snapshots:
 
   '@interop/http-signature-zcap-invoke@6.3.0':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/http-digest-header': 3.2.0
       '@interop/http-signature-header': 5.0.3
       pako: 2.2.0
@@ -1430,7 +1438,7 @@ snapshots:
       '@digitalbazaar/zcap-context': 2.0.1
       '@digitalcredentials/credentials-v2-context': 1.0.0
       '@digitalcredentials/open-badges-context': 3.0.0
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/did-io': 4.2.2
       '@interop/did-method-key': 7.5.1
       '@interop/did-web-resolver': 6.5.0
@@ -1450,14 +1458,14 @@ snapshots:
 
   '@interop/x25519-key-agreement-key@5.4.1':
     dependencies:
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@noble/curves': 2.4.0
       '@scure/base': 2.4.0
 
-  '@interop/zcap@11.4.0':
+  '@interop/zcap@12.0.0':
     dependencies:
       '@digitalbazaar/zcap-context': 2.0.1
-      '@interop/data-integrity-core': 8.9.0
+      '@interop/data-integrity-core': 8.12.0
       '@interop/jsonld-signatures': 11.9.0
 
   '@jridgewell/resolve-uri@3.1.2': {}

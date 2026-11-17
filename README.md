@@ -101,7 +101,7 @@ verification failures -- check `result.verified`:
 
 - On failure: `{ verified: false, error }`.
 - On success: `{ verified: true, capability, capabilityAction, controller,
-invoker, verificationMethod, dereferencedChain }`.
+invoker, verificationMethod, dereferencedChain, caveats }`.
 
 (It does throw a `TypeError` for programmer errors, such as omitting
 `getVerifier`.)
@@ -119,12 +119,28 @@ invoker, verificationMethod, dereferencedChain }`.
 | `expectedRootCapability`   | The authorized root capability ID (string or array).                      |
 | `suite`                    | The signature suite(s) used to verify the delegation chain.               |
 | `allowTargetAttenuation`   | Allow hierarchical RESTful target attenuation (default `false`).          |
+| `supportedCaveats`         | A `Map` of caveat type to async handler. A chain carrying a caveat with no handler does not verify. |
 | `maxClockSkew`             | Allowed clock skew in seconds (default `300`).                            |
 | `now`                      | A UNIX timestamp (seconds) or `Date` to verify against (default: now).    |
 
 See the JSDoc on `verifyCapabilityInvocation` for the full list, including
-`additionalHeaders`, `beforeValidatePurpose`, `inspectCapabilityChain`,
-`maxChainLength`, and `maxDelegationTtl`.
+`additionalHeaders`, `allowedContexts`, `beforeValidatePurpose`,
+`inspectCapabilityChain`, `maxCaveats`, `maxChainLength`, and
+`maxDelegationTtl`.
+
+### Caveats
+
+A zcap may carry restrictions in its `caveat` property. Verification fails with
+an `UnsupportedCaveatError` when any zcap in the chain carries a caveat type
+that `supportedCaveats` has no handler for. A handler that answers
+`{ valid: false }` fails the chain with its `error`, or with a
+`CaveatNotSatisfiedError` when it gives none.
+
+A successful result lists every caveat found as `caveats`, ordered root to
+tail, each with the zcap that carries it. Use it to enforce a caveat that the
+handler accepted but could not decide, such as one that depends on stored
+state. See the `@interop/zcap` README for the handler signature and for how to
+choose a caveat type.
 
 ## Contribute
 

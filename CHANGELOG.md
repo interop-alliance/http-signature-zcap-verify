@@ -1,5 +1,26 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 13.0.0 - TBD
+
+### Changed
+
+- **BREAKING**: Update to `@interop/zcap@12.0.0`. Verification fails with an
+  `UnsupportedCaveatError` when any capability in the chain carries a `caveat`
+  with no handler in `supportedCaveats`. Previously the property was ignored.
+- **BREAKING**: Verification refuses a capability with a malformed `caveat`, or
+  with a property name that contains `:` or starts with `@` outside `proof`.
+- **BREAKING**: Verification refuses a delegated capability that lists a
+  `@context` URL other than the zcap context, the context of `suite`, or a URL
+  in `allowedContexts`.
+- Update to `@interop/data-integrity-core@8.12.0`.
+
+### Added
+
+- `supportedCaveats`, `allowedContexts` and `maxCaveats` options on
+  `verifyCapabilityInvocation`, passed through to `@interop/zcap`.
+- `caveats` on a successful result. It lists each caveat found in the chain
+  with the capability that carries it.
+
 ## 12.2.7 - 2026-10-24
 
 ### Changed
