@@ -79,6 +79,10 @@ export type GetVerifier = (options: {
  * @param [options.beforeValidatePurpose] {Function} - A function that is
  *   called prior to validating the proof purpose and is passed the purpose
  *   instance, proof meta data, and capability information.
+ * @param [options.dereferenceTarget] {Function} - An async function that maps
+ *   the invoked capability's `invocationTarget` to the absolute URI it is
+ *   compared against the request URL with, for a chain whose targets are not
+ *   https URLs (for example DID URLs). Passed to `CapabilityInvocation`.
  * @param [options.inspectCapabilityChain] {Function} - A function that can
  *   inspect a capability chain.
  * @param [options.maxCaveats] {number} - The maximum number of caveats in
@@ -119,6 +123,7 @@ export interface VerifyCapabilityInvocationOptions {
     capability: string | IZcap
     capabilityAction: unknown
   }) => Promise<void> | void
+  dereferenceTarget?: (options: { invocationTarget: string }) => Promise<string>
   inspectCapabilityChain?: InspectCapabilityChain
   maxCaveats?: number
   maxChainLength?: number
@@ -213,6 +218,7 @@ export async function verifyCapabilityInvocation({
   allowTargetAttenuation = false,
   allowedContexts,
   beforeValidatePurpose,
+  dereferenceTarget,
   inspectCapabilityChain,
   maxCaveats,
   maxChainLength,
@@ -352,6 +358,7 @@ export async function verifyCapabilityInvocation({
     allowedContexts,
     // `date` is in milliseconds and `now` is in seconds, so convert
     date: now * 1000,
+    dereferenceTarget,
     expectedAction,
     expectedRootCapability,
     expectedTarget,

@@ -973,6 +973,48 @@ describe('verifyCapabilityInvocation', () => {
       expect(result.verified).toBe(true)
     })
 
+    it('should map a did capability target to the https url via `dereferenceTarget`', async () => {
+      // The chain lives in DID URL space; the request goes to an https URL.
+      const url = 'https://alice.example/images/x.jpg'
+      const invocationTarget = 'did:example:123/images/x.jpg'
+      const {
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        suite,
+        documentLoader,
+        getVerifier,
+        signed
+      } = await setup({ url, invocationTarget, expectedHost: 'alice.example' })
+      const calls: string[] = []
+      const verifyOptions = {
+        url,
+        method,
+        suite,
+        headers: signed,
+        expectedHost,
+        expectedAction,
+        expectedRootCapability,
+        getVerifier,
+        documentLoader,
+        expectedTarget: url
+      }
+
+      // without the hook the targets do not match
+      const without = await verifyCapabilityInvocation(verifyOptions)
+      expect(without.verified).toBe(false)
+
+      const result = await verifyCapabilityInvocation({
+        ...verifyOptions,
+        dereferenceTarget: async ({ invocationTarget: target }) => {
+          calls.push(target)
+          return url
+        }
+      })
+      expect(result.verified).toBe(true)
+      expect(calls).toEqual([invocationTarget])
+    })
+
     it('should prefix a relative url with https and the host', async () => {
       // The signed `url` is relative; the resolved invocation target (and the
       // root capability) is the absolute `https://${host}${url}`.

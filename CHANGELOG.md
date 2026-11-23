@@ -1,5 +1,14 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 13.1.0 - TBD
+
+### Added
+
+- `verifyCapabilityInvocation` accepts an optional async `dereferenceTarget`
+  hook, passed to `CapabilityInvocation` (requires `@interop/zcap` 12.1.0). It
+  maps the invoked capability's target before the comparison with the request
+  URL.
+
 ## 13.0.0 - 2026-11-17
 
 ### Changed

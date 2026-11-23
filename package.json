@@ -37,7 +37,7 @@
   "dependencies": {
     "@interop/data-integrity-core": "^8.12.0",
     "@interop/http-signature-header": "^5.0.3",
-    "@interop/zcap": "^12.0.0",
+    "@interop/zcap": "^12.1.0",
     "@scure/base": "^2.2.0",
     "pako": "^2.0.4"
   },
