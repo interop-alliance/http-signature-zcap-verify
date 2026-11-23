@@ -15,8 +15,8 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3
       '@interop/zcap':
-        specifier: ^12.1.0
-        version: 12.1.0
+        specifier: ^12.2.0
+        version: 12.2.0
       '@scure/base':
         specifier: ^2.2.0
         version: 2.4.0
@@ -296,8 +296,8 @@ packages:
     resolution: {integrity: sha512-B9/nkteXhceT1Psy+0Lwg4R4JzW6TUYDe8AgPIc3nsQKOCdIQ4MjjUPy9/kQ7eTnzW+GR0FcTSKDy6/GQqlwdQ==}
     engines: {node: '>=24.0'}
 
-  '@interop/zcap@12.1.0':
-    resolution: {integrity: sha512-PSIhdItOFQRsAlI5YTrxOQP9iWIhSm/yKYo+cCSLE42Fc300HMXq5LamxH1zkBrMzJghEfL6Lks8Ql+kzAomxg==}
+  '@interop/zcap@12.2.0':
+    resolution: {integrity: sha512-LmV5vr3edZC0AqGIq6/wM+SsjcIrMTTLGi/fLrW3EW9eKFMuVpqijb1I4068XmMLPLjr6oIPwhBB4kiCLSY7Ig==}
     engines: {node: '>=24.0'}
 
   '@isaacs/nonrecursive-glob-match@1.1.0':
@@ -1506,7 +1506,7 @@ snapshots:
       '@noble/curves': 2.4.0
       '@scure/base': 2.4.0
 
-  '@interop/zcap@12.1.0':
+  '@interop/zcap@12.2.0':
     dependencies:
       '@digitalbazaar/zcap-context': 2.0.1
       '@interop/data-integrity-core': 8.12.0

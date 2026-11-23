@@ -1,5 +1,16 @@
 # @interop/http-signature-zcap-verify ChangeLog
 
+## 13.2.0 - TBD
+
+### Changed
+
+- Update to `@interop/zcap@12.2.0`. With `allowTargetAttenuation`, a DID URL
+  capability target is attenuated by path and selectors separately. A request
+  URL that adds or extends the query of such a target is refused, also when a
+  `dereferenceTarget` hook maps the target.
+- With `allowTargetAttenuation`, a request URL beneath the capability's target
+  is refused when its path has a `.` or `..` segment (or the `%2e` form).
+
 ## 13.1.0 - 2026-11-22
 
 ### Added
